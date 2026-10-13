@@ -1,0 +1,73 @@
+# tiny-bulkhead
+
+> Zero-dependency concurrency isolation (bulkhead) for LLM calls.
+
+## What it is
+A small Python library that caps the number of in-flight calls to a
+slow or failing dependency, so one stuck provider cannot starve every
+other call site. Pairs naturally with `tiny-circuit-breaker` (fail-fast
+on high error rate) and `tiny-rate-limiter` (cap the request rate).
+
+## When to use it
+- You call multiple LLM providers from one worker and want to isolate them.
+- One provider going slow is causing your whole agent to hang.
+- You want a thread-safe `with` block that guarantees a concurrency cap.
+- You want a `BulkheadPool` registry so call sites never construct a
+  bulkhead inline.
+
+## Install
+```
+pip install tiny-bulkhead
+```
+
+## Quick start
+```python
+from tiny_bulkhead import Bulkhead, BulkheadPool, BulkheadFull
+
+bh = Bulkhead("openai", max_concurrent=4, timeout=1.0)
+with bh:
+    response = openai_call()
+
+pool = BulkheadPool({"openai": 4, "anthropic": 2})
+with pool.bulkhead("openai"):
+    response = openai_call()
+
+# Or use the run() helper
+result = pool.bulkhead("openai").run(openai_call, prompt="hi")
+```
+
+## Async
+```python
+bh = Bulkhead("openai", max_concurrent=4)
+
+async def go():
+    async with bh():
+        return await openai_async_call()
+
+    return await bh.run_async(openai_async_call, prompt="hi")
+```
+
+## Public API
+- `Bulkhead(name, max_concurrent, *, timeout=1.0, call_timeout=None)`
+- `BulkheadPool(sizes, *, default_timeout=1.0, default_call_timeout=None)`
+- `BulkheadStats` (snapshot dataclass, JSON-serializable via `.to_dict()`)
+- `BulkheadFull`, `BulkheadTimeout` exceptions
+
+Methods on `Bulkhead`: `acquire`, `release(success=True)`,
+`acquire_async`, `release_async`, `run(func, *args, **kwargs)`,
+`run_async(func, *args, **kwargs)`, `stats()`, `reset_stats()`.
+
+Properties: `in_flight`. Context managers: `with bh:` (sync),
+`async with bh():` (async).
+
+Methods on `BulkheadPool`: `register(name, max_concurrent)`,
+`bulkhead(name)`, `names()`, `stats()`.
+
+## Sibling libraries
+- `tiny-circuit-breaker` — fail-fast on high error rate.
+- `tiny-rate-limiter` — token / leaky / sliding window.
+- `tiny-retry-plus` — retry with jitter and circuit-breaker integration.
+- `tiny-llm-router` — role-based provider picking with cost caps.
+
+## License
+MIT
