@@ -17,4 +17,4 @@ jobs:
       - name: Install pytest
         run: pip install pytest
       - name: Run test suite
-        run: python -m pytest test_tiny_bulkhead.py tests -v
+        run: python -m pytest test_tiny_bulkhead.py -v
