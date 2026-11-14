@@ -12,7 +12,8 @@ one stuck provider cannot starve every other call site. Composes with
 ## Install
 
 ```bash
-pip install tiny-bulkhead
+# From GitHub (recommended -- not yet on PyPI)
+pip install git+https://github.com/hussain-alsaibai/tiny-bulkhead.git
 ```
 
 Or copy the single file `tiny_bulkhead.py` (~290 LOC) into your project.
