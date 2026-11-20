@@ -16,8 +16,10 @@ on high error rate) and `tiny-rate-limiter` (cap the request rate).
   bulkhead inline.
 
 ## Install
+NOTE: unpublished on PyPI -- the bare name is not on the index, so the `pip install <name>` form 404s. The URL below is the install.
+
 ```
-pip install tiny-bulkhead
+pip install "tiny-bulkhead @ git+https://github.com/hussain-alsaibai/tiny-bulkhead.git"
 ```
 
 ## Quick start
